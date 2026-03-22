@@ -6,13 +6,13 @@ import java.io.FileReader;
 
 public class Main {
     private static void PrintHelpMsg() {
-        System.out.println("Usage: java -jar nwwmdecrypt.jar -i <input file> -o <output file> -k <key string>");
+        System.out.println("Usage: java -jar nwwmdecrypt.jar -i <input file> -o <output file> -k <key+iv hex (96 chars)>");
     }
 
     public static void main(String[] args) {
         String inputFn = "";
         String outputFn = "";
-        String keyString = "";
+        String keyIvHex = "";
 
         if (args.length < 1) {
             System.out.println("No argument is provided!");
@@ -28,7 +28,7 @@ public class Main {
                     break;
                 case "-i":
                     i++;
-                    if (i > args.length) {
+                    if (i >= args.length) {
                         PrintHelpMsg();
                         System.exit(1);
                     } else {
@@ -37,7 +37,7 @@ public class Main {
                     break;
                 case "-o":
                     i++;
-                    if (i > args.length) {
+                    if (i >= args.length) {
                         PrintHelpMsg();
                         System.exit(1);
                     } else {
@@ -46,33 +46,34 @@ public class Main {
                     break;
                 case "-k":
                     i++;
-                    if (i > args.length) {
+                    if (i >= args.length) {
                         PrintHelpMsg();
                         System.exit(1);
                     } else {
-                        keyString = args[i];
+                        keyIvHex = args[i];
                     }
                     break;
             }
         }
 
-        if (inputFn.equals("") || outputFn.equals("") || keyString.equals("")) {
+        if (inputFn.equals("") || outputFn.equals("") || keyIvHex.equals("")) {
             System.out.println("Bad arguments!");
             PrintHelpMsg();
             System.exit(1);
         }
 
-        keyString = keyString.trim();
-        if (keyString.length() != 48) {
-            System.out.println("Wrong length of key! The key should be exactly 48 characters.");
-            PrintHelpMsg();
+        keyIvHex = keyIvHex.trim();
+        if (keyIvHex.length() != 96) {
+            System.out.println("Wrong key+iv length! Expected 96 hex chars (64 key + 32 iv), got " + keyIvHex.length());
             System.exit(1);
         }
+        String keyHex = keyIvHex.substring(0, 64);
+        String ivHex = keyIvHex.substring(64);
 
         File in = new File(inputFn);
         File out = new File(outputFn);
 
-        UpdateDataDecipher decipher = new UpdateDataDecipher(in, out, keyString);
+        UpdateDataDecipher decipher = new UpdateDataDecipher(in, out, keyHex, ivHex);
 
         try {
             System.out.println("Decrypting...");

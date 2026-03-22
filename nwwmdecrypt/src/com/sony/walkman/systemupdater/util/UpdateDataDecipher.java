@@ -16,14 +16,14 @@ public final class UpdateDataDecipher {
     private String mHash = null;
     private File mOut;
     private File mSrc;
-    private String keyString;
+    private String keyHex;
+    private String ivHex;
 
-    public UpdateDataDecipher(File source, File output, String keyString) {
-        this.mSrc = null;
-        this.mOut = null;
+    public UpdateDataDecipher(File source, File output, String keyHex, String ivHex) {
         this.mSrc = source;
         this.mOut = output;
-        this.keyString = keyString;
+        this.keyHex = keyHex;
+        this.ivHex = ivHex;
     }
 
     public void decipher() throws DecihperErrorException {
@@ -40,7 +40,7 @@ public final class UpdateDataDecipher {
                 throw new IOException("File read error : ret " + ret2);
             }
             fis.close();
-            UpdateMetaStore metaSt = new UpdateMetaStore(data, keyString);
+            UpdateMetaStore metaSt = new UpdateMetaStore(data, keyHex, ivHex);
             if (!metaSt.isMagicCorrect()) { // check if magic is correct ("NWWM")
                 throw new DecihperErrorException("Magic error. can not update.");
             }
@@ -151,7 +151,7 @@ public final class UpdateDataDecipher {
         private final byte[] tmpIv;
         private final byte[] tmpKey256;
 
-        private UpdateMetaStore(byte[] headerByte, String keyString) {
+        private UpdateMetaStore(byte[] headerByte, String keyHex, String ivHex) {
             this.tmpKey256 = "test_for_aes256bit_decode_perfom".getBytes();
             this.tmpIv = "test_iv_stringzz".getBytes();
             this.HEADER_SC = new byte[]{78, 87, 87, 77};
@@ -160,7 +160,7 @@ public final class UpdateDataDecipher {
             this.mIv = new byte[16];
             this.mSumRaw = new byte[56];
             this.mSum = new byte[28];
-            UpdateProperties prop = new UpdateProperties(keyString);
+            UpdateProperties prop = new UpdateProperties(keyHex, ivHex);
             this.mKey = prop.getKeyBytes();
             this.mIv = prop.getIvBytes();
             System.arraycopy(headerByte, 0, this.mSc, 0, 4);

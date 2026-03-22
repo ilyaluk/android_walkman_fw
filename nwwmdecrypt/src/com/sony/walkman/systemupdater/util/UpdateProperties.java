@@ -1,16 +1,22 @@
 package com.sony.walkman.systemupdater.util;
 
-import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-
 public class UpdateProperties {
     private byte[] mIvBytes;
     private byte[] mKeyBytes;
 
-    public UpdateProperties(String keyString) {
-        byte[] keyArr = keyString.getBytes(StandardCharsets.US_ASCII);
-        mKeyBytes = Arrays.copyOfRange(keyArr, 0, 32);
-        mIvBytes = Arrays.copyOfRange(keyArr, 32, 48);
+    public UpdateProperties(String keyHex, String ivHex) {
+        mKeyBytes = hexToBytes(keyHex);
+        mIvBytes = hexToBytes(ivHex);
+    }
+
+    private static byte[] hexToBytes(String hex) {
+        int len = hex.length();
+        byte[] out = new byte[len / 2];
+        for (int i = 0; i < len; i += 2) {
+            out[i / 2] = (byte) ((Character.digit(hex.charAt(i), 16) << 4)
+                                + Character.digit(hex.charAt(i + 1), 16));
+        }
+        return out;
     }
 
     public byte[] getKeyBytes() {
